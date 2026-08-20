@@ -34,9 +34,14 @@ button { -webkit-appearance: none; appearance: none; font-family: inherit; }
 .hero h1 span { color: #7c3aed; }
 .hero p { color: #666; font-size: 15px; margin-bottom: 24px; font-weight: 600; }
 .search-bar { display: flex; max-width: 500px; margin: 0 auto; background: #fff; border-radius: 50px; overflow: hidden; border: 2.5px solid #2d1b4e; box-shadow: 4px 4px 0 #2d1b4e; }
-.search-bar input { flex: 1; border: none; padding: 12px 20px; font-size: 16px; outline: none; color: #111; font-family: inherit; font-weight: 600; background: transparent; -webkit-appearance: none; }
-.search-bar button { background: #2d1b4e; border: none; padding: 10px 22px; color: #fff; cursor: pointer; font-size: 14px; font-weight: 800; border-radius: 50px; margin: 3px; font-family: inherit; }
+.search-bar input { flex: 1; min-width: 0; border: none; padding: 12px 20px; font-size: 16px; outline: none; color: #111; font-family: inherit; font-weight: 600; background: transparent; -webkit-appearance: none; }
+.search-bar input::placeholder { overflow: visible; text-overflow: clip; }
+.search-bar button { flex-shrink: 0; white-space: nowrap; background: #2d1b4e; border: none; padding: 10px 22px; color: #fff; cursor: pointer; font-size: 14px; font-weight: 800; border-radius: 50px; margin: 3px; font-family: inherit; }
 .search-bar button:hover { background: #44307a; }
+@media (max-width: 640px) {
+  .search-bar input { padding: 12px 10px; font-size: 14px; }
+  .search-bar button { padding: 10px 14px; font-size: 12px; }
+}
 
 .cats { background: #fff; padding: 0 20px; display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-bottom: 2px solid #f0f0f0; }
 .cats::-webkit-scrollbar { display: none; }

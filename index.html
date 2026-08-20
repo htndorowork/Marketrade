@@ -42,7 +42,7 @@
       <p>Buy & sell with your community — fast, easy & safe 🙌</p>
       <div style="position:relative;max-width:500px;margin:0 auto">
         <div class="search-bar" style="max-width:none;margin:0">
-          <input type="text" id="search-input" placeholder="What are you looking for? 👀" autocomplete="off" onkeydown="if(event.key==='Enter'){hideSuggestions();doFilter()}" oninput="showSuggestions(this.value)" onblur="setTimeout(hideSuggestions,150)"/>
+          <input type="text" id="search-input" placeholder="What are you looking for?" autocomplete="off" onkeydown="if(event.key==='Enter'){hideSuggestions();doFilter()}" oninput="showSuggestions(this.value)" onblur="setTimeout(hideSuggestions,150)"/>
           <button onclick="hideSuggestions();doFilter()">Search 🔍</button>
         </div>
         <div id="search-suggestions" class="search-suggestions" style="display:none"></div>
@@ -717,7 +717,6 @@
           '<div class="card-body">'+
           '<div class="card-title">'+l.title+'</div>'+
           (verifiedTag?'<div class="card-seller">'+verifiedTag+'</div>':'')+
-          (l.profiles?.residence?'<div class="card-residence">📍 '+l.profiles.residence+'</div>':'')+
           (negTag?'<div>'+negTag+'</div>':'')+
           stock+
           '<div class="card-footer"><span class="price">R'+fp+'</span>'+
