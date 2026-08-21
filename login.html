@@ -10,7 +10,7 @@
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#7c3aed"/>
+  <meta name="theme-color" content="#2563eb"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link rel="stylesheet" href="style.css"/>
   <script src="js/areas-data.js"></script>
@@ -41,7 +41,7 @@
         </div>
         <div class="auth-error" id="login-error"></div>
         <button class="btn-primary" id="btn-login">Sign In 🚀</button>
-        <p style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();openForgotPw()" style="font-size:12.5px;color:#7c3aed;font-weight:700;text-decoration:none">Forgot password?</a></p>
+        <p style="text-align:center;margin-top:12px"><a href="#" onclick="event.preventDefault();openForgotPw()" style="font-size:12.5px;color:#2563eb;font-weight:700;text-decoration:none">Forgot password?</a></p>
       </div>
 
       <!-- FORGOT PASSWORD -->
@@ -58,7 +58,7 @@
       <div id="signup-form" style="display:none">
         <h2 class="auth-title">Join Marketrade! 🎉</h2>
         <p class="auth-sub">Create your free account</p>
-        <div id="referral-banner" style="display:none;background:#f5f0fe;color:#7c3aed;font-weight:700;font-size:12.5px;padding:10px 14px;border-radius:12px;margin-bottom:14px">🎁 You were invited by a friend — sign up to connect your accounts!</div>
+        <div id="referral-banner" style="display:none;background:#eff6ff;color:#2563eb;font-weight:700;font-size:12.5px;padding:10px 14px;border-radius:12px;margin-bottom:14px">🎁 You were invited by a friend — sign up to connect your accounts!</div>
         <div class="form-group"><label>I want to</label>
           <div class="role-selector">
             <button class="role-btn active" id="role-buyer" onclick="selectRole('buyer')">🛍️ Buy</button>
@@ -96,7 +96,7 @@
         </div>
         <div class="auth-error" id="signup-error"></div>
         <button class="btn-primary" id="btn-signup">Create Account 🎓</button>
-        <p style="text-align:center;margin-top:10px;font-size:11px;color:#aaa;font-weight:600">By signing up you agree to our <a href="terms.html" style="color:#7c3aed">Terms</a> and <a href="privacy.html" style="color:#7c3aed">Privacy Policy</a></p>
+        <p style="text-align:center;margin-top:10px;font-size:11px;color:#aaa;font-weight:600">By signing up you agree to our <a href="terms.html" style="color:#2563eb">Terms</a> and <a href="privacy.html" style="color:#2563eb">Privacy Policy</a></p>
       </div>
     </div>
   </main>
@@ -233,7 +233,7 @@
       const box=document.getElementById('signup-area-list');
       if(!sellerAreas.length){ box.innerHTML=''; return; }
       box.innerHTML=sellerAreas.map((a,i)=>
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;background:#faf7ff;border:1.5px solid #eadcfb;border-radius:12px;padding:10px 12px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;background:#f0f7ff;border:1.5px solid #eadcfb;border-radius:12px;padding:10px 12px">'+
           '<div><div style="font-weight:800;font-size:13px;color:#111">📍 '+a.district+', '+a.city+'</div>'+
           '<div style="font-size:12px;color:#888;font-weight:600;margin-top:2px">'+(a.suburbs||[]).join(', ')+'</div></div>'+
           '<button type="button" onclick="removeSellerArea('+i+')" style="border:none;background:none;color:#c62828;font-weight:900;font-size:16px;cursor:pointer;line-height:1">✕</button>'+
@@ -350,7 +350,7 @@
     document.getElementById('btn-forgot').onclick=async()=>{
       const email=document.getElementById('forgot-email').value.trim();
       const err=document.getElementById('forgot-error');
-      err.style.color='#9333ea';err.textContent='';
+      err.style.color='#1d4ed8';err.textContent='';
       if(!email){err.textContent='❌ Enter your email';return;}
       const {error}=await supabase.auth.resetPasswordForEmail(email);
       if(error){err.textContent='❌ '+error.message;return;}
@@ -361,7 +361,7 @@
       const email=document.getElementById('login-email').value;
       const password=document.getElementById('login-password').value;
       const err=document.getElementById('login-error');
-      err.style.color='#9333ea';err.textContent='';
+      err.style.color='#1d4ed8';err.textContent='';
       const {error}=await supabase.auth.signInWithPassword({email,password});
       if(error){
         if(error.message && error.message.toLowerCase().includes('email not confirmed')){
@@ -390,7 +390,7 @@
       const password=document.getElementById('signup-password').value;
       const err=document.getElementById('signup-error');
       const role=window.selectedRole||'buyer';
-      err.style.color='#9333ea';err.textContent='';
+      err.style.color='#1d4ed8';err.textContent='';
       if(!name||!wa||!email||!password){err.textContent='❌ Please fill in all fields';return;}
       if(!isValidSAPhone(wa)){err.textContent='❌ Enter a valid South African number, e.g. 0812345678 or +27812345678';return;}
       if(role==='buyer' && (!buyerProvince||!buyerCity||!buyerDistrict||!buyerSuburb)){err.textContent='❌ Select your area';return;}

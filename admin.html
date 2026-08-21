@@ -10,7 +10,7 @@
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#7c3aed"/>
+  <meta name="theme-color" content="#2563eb"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -32,7 +32,7 @@
     <div id="admin-content" style="display:none">
       <div class="section-header" style="margin-bottom:20px">
         <div class="section-title">Admin Panel 🛡️</div>
-        <span style="font-size:12px;background:#f5f0fe;color:#7c3aed;font-weight:700;padding:4px 12px;border-radius:50px">Admin</span>
+        <span style="font-size:12px;background:#eff6ff;color:#2563eb;font-weight:700;padding:4px 12px;border-radius:50px">Admin</span>
       </div>
 
       <!-- PAYWALL CONTROL -->
@@ -142,13 +142,13 @@
       const active=data?.value==='true';
       document.getElementById('paywall-toggle').checked=active;
       document.getElementById('paywall-status').textContent=active?'🔴 Emergency pause ON — sellers cannot open the dashboard':'🟢 Emergency pause OFF — sellers must still have an active paid plan to post';
-      document.getElementById('paywall-status').style.color=active?'#9333ea':'#2e7d32';
+      document.getElementById('paywall-status').style.color=active?'#1d4ed8':'#2e7d32';
     }
 
     window.togglePaywall=async(checked)=>{
       await supabase.from('settings').update({value:checked?'true':'false'}).eq('key','paywall_active');
       document.getElementById('paywall-status').textContent=checked?'🔴 Emergency pause ON — sellers cannot open the dashboard':'🟢 Emergency pause OFF — sellers must still have an active paid plan to post';
-      document.getElementById('paywall-status').style.color=checked?'#9333ea':'#2e7d32';
+      document.getElementById('paywall-status').style.color=checked?'#1d4ed8':'#2e7d32';
     };
 
     async function loadStats(){
@@ -206,7 +206,7 @@
     window.closeEditModal=()=>{document.getElementById('edit-modal-overlay').style.display='none';};
     window.saveAdminEdit=async()=>{
       const err=document.getElementById('ae-error');
-      err.style.color='#9333ea';err.textContent='';
+      err.style.color='#1d4ed8';err.textContent='';
       const title=document.getElementById('ae-title').value.trim();
       const price=parseFloat(document.getElementById('ae-price').value);
       const qty=parseInt(document.getElementById('ae-qty').value);
@@ -326,9 +326,9 @@
       if(!unpaid.length){c.innerHTML='<div class="empty-msg">All sellers are paid up 🎉</div>';return;}
       c.innerHTML=unpaid.map(s=>{
         let reason;
-        if(s.is_blocked) reason='<span style="color:#9333ea;font-weight:700">🚫 Blocked by admin</span>';
-        else if(!s.subscription_paid_until) reason='<span style="color:#9333ea;font-weight:700">⚠️ No subscription on file</span>';
-        else reason='<span style="color:#9333ea;font-weight:700">⏰ Expired '+new Date(s.subscription_paid_until).toLocaleDateString('en-ZA')+'</span>';
+        if(s.is_blocked) reason='<span style="color:#1d4ed8;font-weight:700">🚫 Blocked by admin</span>';
+        else if(!s.subscription_paid_until) reason='<span style="color:#1d4ed8;font-weight:700">⚠️ No subscription on file</span>';
+        else reason='<span style="color:#1d4ed8;font-weight:700">⏰ Expired '+new Date(s.subscription_paid_until).toLocaleDateString('en-ZA')+'</span>';
         return '<div class="seller-row">'+
           '<div class="seller-avatar">'+(s.store_logo_url?'<img loading="lazy" src="'+s.store_logo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>':'👤')+'</div>'+
           '<div class="listing-info" style="flex:1;cursor:pointer" onclick="window._viewStore(\''+s.id+'\')" title="View seller\'s store">'+
@@ -380,7 +380,7 @@
         const canOpen=!!r.listing_id;
         return '<div class="seller-row">'+
         '<div class="listing-info" style="flex:1'+(canOpen?';cursor:pointer':'')+'"'+(canOpen?' onclick="window.open(\'index.html?open='+r.listing_id+'\',\'_blank\')" title="Open this listing"':'')+'>'+
-        '<div class="listing-title">'+r.reason+(r.status==='open'?' <span style="color:#9333ea;font-weight:800">(open)</span>':' <span style="color:#2e7d32;font-weight:800">(resolved)</span>')+'</div>'+
+        '<div class="listing-title">'+r.reason+(r.status==='open'?' <span style="color:#1d4ed8;font-weight:800">(open)</span>':' <span style="color:#2e7d32;font-weight:800">(resolved)</span>')+'</div>'+
         '<div class="listing-meta">📦 Listing: '+(r.listings?.title||'—')+(canOpen?' 👁️':'')+' · 👤 Reported: '+(r.reported?.full_name||'Unknown')+'</div>'+
         (r.details?'<div class="listing-meta">💬 '+r.details+'</div>':'')+
         '<div class="listing-meta" style="color:#aaa">'+new Date(r.created_at).toLocaleDateString('en-ZA')+'</div>'+
@@ -424,7 +424,7 @@
         '<div class="stat"><div class="stat-num">'+(orders?.length||0)+'</div><div class="stat-label">Total Orders</div></div>'+
         '</div>'+
         '<div class="form-card"><h3 style="font-size:15px;font-weight:800;margin-bottom:12px">Listings by Category</h3>'+
-        topCats.map(([cat,n])=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:700"><span>'+cat+'</span><span style="color:#7c3aed">'+n+'</span></div>').join('')+
+        topCats.map(([cat,n])=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:700"><span>'+cat+'</span><span style="color:#2563eb">'+n+'</span></div>').join('')+
         '</div>';
     }
 

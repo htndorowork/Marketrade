@@ -11,7 +11,7 @@
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#7c3aed"/>
+  <meta name="theme-color" content="#2563eb"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link rel="stylesheet" href="style.css"/>
   <script src="js/areas-data.js"></script>
@@ -124,7 +124,7 @@
       </label>
       <button class="filter-reset" onclick="resetFilters()" type="button">↺ Reset</button>
       <button class="filter-apply" onclick="applyFilters()" type="button">Apply ✓</button>
-      <button class="filter-apply" style="background:#fff;color:#7c3aed;border:2px solid #7c3aed" onclick="saveSearchAlert()" type="button">🔔 Alert me</button>
+      <button class="filter-apply" style="background:#fff;color:#2563eb;border:2px solid #2563eb" onclick="saveSearchAlert()" type="button">🔔 Alert me</button>
     </div>
 
     <div class="grid" id="listings-grid">
@@ -173,8 +173,8 @@
           </div>
           <span id="modal-stock-note" style="font-size:12px;color:#888;font-weight:600"></span>
         </div>
-        <div id="modal-signin-note" style="display:none;background:#f5f0fe;border:2px solid #d8c4f7;border-radius:12px;padding:12px;text-align:center;margin-bottom:12px;font-size:13px;font-weight:700;color:#9333ea">
-          🔒 <a href="login.html" style="color:#7c3aed;text-decoration:none">Sign in</a> to order this item
+        <div id="modal-signin-note" style="display:none;background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;padding:12px;text-align:center;margin-bottom:12px;font-size:13px;font-weight:700;color:#1d4ed8">
+          🔒 <a href="login.html" style="color:#2563eb;text-decoration:none">Sign in</a> to order this item
         </div>
         <button class="btn-order" id="btn-add-to-cart">🛒 Add to Cart</button>
         <button class="btn-order-cart" id="btn-order-now">Order Now</button>
@@ -875,13 +875,13 @@
       slides.style.transform='translateX(0)';
       document.getElementById('modal-badge').innerHTML='<span class="badge" style="background:'+c.bg+';color:'+c.text+'">'+l.category+'</span>';
       document.getElementById('modal-title').textContent=l.title;
-      document.getElementById('modal-price').innerHTML=l.discount_percent>0?'<span style="text-decoration:line-through;color:#aaa;font-size:14px">R'+l.price+'</span> <span style="color:#7c3aed;font-weight:900;font-size:20px">R'+fp+'</span>':'<span style="font-size:22px;font-weight:900">R'+fp+'</span>';
+      document.getElementById('modal-price').innerHTML=l.discount_percent>0?'<span style="text-decoration:line-through;color:#aaa;font-size:14px">R'+l.price+'</span> <span style="color:#2563eb;font-weight:900;font-size:20px">R'+fp+'</span>':'<span style="font-size:22px;font-weight:900">R'+fp+'</span>';
       document.getElementById('modal-desc').textContent=l.description||'No description.';
       const flatConf2=FLAT_SUBCATS[l.category];
       const flatVal2=flatConf2?l[flatConf2.field]:null;
       const deliveryTxt = describeDeliveryScope(l.profiles);
       const extraTags = (l.condition?'<div><strong>🏷️ Condition:</strong> '+l.condition+'</div>':'')+(l.is_negotiable?'<div><strong>💬 Price is negotiable</strong></div>':'')+(l.delivery_fee>0?'<div><strong>🚚 Delivery fee:</strong> R'+l.delivery_fee+'</div>':'');
-      document.getElementById('modal-seller-info').innerHTML='<div><strong>👤 Seller:</strong> '+(l.profiles?.full_name||'Unknown')+'</div>'+(l.profiles?.residence?'<div><strong>📍 Residence:</strong> '+l.profiles.residence+'</div>':'')+((l.category==='Textbooks'&&l.textbook_year)?'<div><strong>🎓 Year:</strong> '+l.textbook_year+'</div>'+(l.textbook_subject?'<div><strong>📖 Subject:</strong> '+l.textbook_subject+'</div>':''):'')+(flatVal2?'<div><strong>'+flatConf2.emoji+' Type:</strong> '+flatVal2+'</div>':'')+extraTags+(deliveryTxt?'<div><strong>🚚 Delivers to:</strong> '+deliveryTxt+'</div>':'')+'<div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><a href="store.html?seller='+l.seller_id+'" style="font-weight:800;color:#7c3aed;text-decoration:none">🏪 Visit store</a><a href="listing-reviews.html?listing='+l.id+'" style="font-weight:800;color:#7c3aed;text-decoration:none">⭐ Reviews</a><a href="messages.html?seller='+l.seller_id+'&listing='+l.id+'" style="font-weight:800;color:#7c3aed;text-decoration:none">💬 Message seller</a><a href="#" onclick="event.preventDefault();shareListing()" style="font-weight:800;color:#7c3aed;text-decoration:none">🔗 Share</a></div>';
+      document.getElementById('modal-seller-info').innerHTML='<div><strong>👤 Seller:</strong> '+(l.profiles?.full_name||'Unknown')+'</div>'+(l.profiles?.residence?'<div><strong>📍 Residence:</strong> '+l.profiles.residence+'</div>':'')+((l.category==='Textbooks'&&l.textbook_year)?'<div><strong>🎓 Year:</strong> '+l.textbook_year+'</div>'+(l.textbook_subject?'<div><strong>📖 Subject:</strong> '+l.textbook_subject+'</div>':''):'')+(flatVal2?'<div><strong>'+flatConf2.emoji+' Type:</strong> '+flatVal2+'</div>':'')+extraTags+(deliveryTxt?'<div><strong>🚚 Delivers to:</strong> '+deliveryTxt+'</div>':'')+'<div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><a href="store.html?seller='+l.seller_id+'" style="font-weight:800;color:#2563eb;text-decoration:none">🏪 Visit store</a><a href="listing-reviews.html?listing='+l.id+'" style="font-weight:800;color:#2563eb;text-decoration:none">⭐ Reviews</a><a href="messages.html?seller='+l.seller_id+'&listing='+l.id+'" style="font-weight:800;color:#2563eb;text-decoration:none">💬 Message seller</a><a href="#" onclick="event.preventDefault();shareListing()" style="font-weight:800;color:#2563eb;text-decoration:none">🔗 Share</a></div>';
       document.getElementById('modal-qty').textContent=1;
       document.getElementById('modal-stock-note').textContent=l.quantity>0?l.quantity+' available':'Out of stock';
       document.getElementById('btn-add-to-cart').disabled=l.quantity<=0;
@@ -932,7 +932,7 @@
     window.closeReportModal=()=>{document.getElementById('report-modal-overlay').style.display='none';};
     window.submitReport=async()=>{
       const err=document.getElementById('report-error');
-      err.style.color='#9333ea';err.textContent='';
+      err.style.color='#1d4ed8';err.textContent='';
       if(!currentListing){err.textContent='❌ No listing selected';return;}
       const {error}=await supabase.from('reports').insert({
         reporter_id:currentUser.id,
