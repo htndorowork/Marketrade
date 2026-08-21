@@ -6,7 +6,7 @@
   <title>Sign In — Marketrade</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
     <meta property="og:title" content="Sign In — Marketrade"/>
-  <meta property="og:description" content="Buy and sell with your community — textbooks, electronics, clothing, and more."/>
+  <meta property="og:description" content="Buy and sell with your community — jobs, furniture, electronics and more."/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
@@ -58,6 +58,7 @@
       <div id="signup-form" style="display:none">
         <h2 class="auth-title">Join Marketrade! 🎉</h2>
         <p class="auth-sub">Create your free account</p>
+        <div id="referral-banner" style="display:none;background:#f5f0fe;color:#7c3aed;font-weight:700;font-size:12.5px;padding:10px 14px;border-radius:12px;margin-bottom:14px">🎁 You were invited by a friend — sign up to connect your accounts!</div>
         <div class="form-group"><label>I want to</label>
           <div class="role-selector">
             <button class="role-btn active" id="role-buyer" onclick="selectRole('buyer')">🛍️ Buy</button>
@@ -65,7 +66,7 @@
           </div>
         </div>
         <div class="form-group"><label>Full Name *</label><input type="text" id="signup-name" placeholder="Thabo Mokoena"/></div>
-        <div class="form-group"><label>WhatsApp Number *</label><input type="text" id="signup-whatsapp" placeholder="0812345678"/></div>
+        <div class="form-group"><label>WhatsApp Number *</label><input type="text" inputmode="tel" id="signup-whatsapp" placeholder="0812345678 or +27812345678"/></div>
         <div class="form-group seller-only" style="display:none"><label>Residence</label><input type="text" id="signup-residence" placeholder="e.g. 12 Church Street, Potchefstroom"/></div>
 
         <div class="form-group buyer-only">
@@ -336,6 +337,16 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://spupfdclswjlpwiebwlq.supabase.co','sb_publishable_EyDf6vx8F4-aI09u6lK0_w_F4gdi9PH');
 
+    // Referral capture: ?ref=CODE in the URL, remembered even if the person
+    // browses around before signing up.
+    const refParam = new URLSearchParams(location.search).get('ref');
+    if (refParam) localStorage.setItem('mt_ref_code', refParam);
+    const storedRefCode = localStorage.getItem('mt_ref_code');
+    if (storedRefCode) {
+      document.getElementById('referral-banner').style.display = 'block';
+      showTab('signup');
+    }
+
     document.getElementById('btn-forgot').onclick=async()=>{
       const email=document.getElementById('forgot-email').value.trim();
       const err=document.getElementById('forgot-error');
@@ -365,6 +376,12 @@
       window.location.href = p?.role==='seller' ? 'seller.html' : 'profile.html';
     };
 
+    // South African number: 0XXXXXXXXX (10 digits) or +27XXXXXXXXX (9 digits after +27)
+    function isValidSAPhone(v){
+      const cleaned=(v||'').replace(/[\s-]/g,'');
+      return /^(0\d{9}|\+27\d{9})$/.test(cleaned);
+    }
+
     document.getElementById('btn-signup').onclick=async()=>{
       const name=document.getElementById('signup-name').value.trim();
       const wa=document.getElementById('signup-whatsapp').value.trim();
@@ -375,6 +392,7 @@
       const role=window.selectedRole||'buyer';
       err.style.color='#9333ea';err.textContent='';
       if(!name||!wa||!email||!password){err.textContent='❌ Please fill in all fields';return;}
+      if(!isValidSAPhone(wa)){err.textContent='❌ Enter a valid South African number, e.g. 0812345678 or +27812345678';return;}
       if(role==='buyer' && (!buyerProvince||!buyerCity||!buyerDistrict||!buyerSuburb)){err.textContent='❌ Select your area';return;}
       let allAreas=false;
       if(role==='seller'){
@@ -398,6 +416,16 @@
           payload.seller_areas=sellerAreas;
         }
         await supabase.from('profiles').upsert(payload);
+
+        // Link this signup to whoever referred them, if any, and clear the code.
+        const refCode = localStorage.getItem('mt_ref_code');
+        if (refCode) {
+          const {data:referrer} = await supabase.from('profiles').select('id').eq('referral_code', refCode.toUpperCase()).maybeSingle();
+          if (referrer && referrer.id !== data.user.id) {
+            await supabase.from('referrals').insert({referrer_id: referrer.id, referred_id: data.user.id});
+          }
+          localStorage.removeItem('mt_ref_code');
+        }
       }
       err.style.color='#2e7d32';
       err.textContent='✅ Account created! Sign in now.';

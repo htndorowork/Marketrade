@@ -6,7 +6,7 @@
   <title>Seller Dashboard — Marketrade</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
     <meta property="og:title" content="Seller Dashboard — Marketrade"/>
-  <meta property="og:description" content="Buy and sell with your community — textbooks, electronics, clothing, and more."/>
+  <meta property="og:description" content="Buy and sell with your community — jobs, furniture, electronics and more."/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
@@ -406,7 +406,7 @@
           <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Your Profile 👤</h3>
           <p style="font-size:13px;color:#888;font-weight:600;margin-bottom:16px">This shows on your listings so buyers can find you.</p>
           <div class="form-group"><label>Full Name *</label><input type="text" id="p-name" placeholder="Thabo Mokoena"/></div>
-          <div class="form-group"><label>WhatsApp *</label><input type="text" id="p-whatsapp" placeholder="0812345678"/></div>
+          <div class="form-group"><label>WhatsApp *</label><input type="text" inputmode="tel" id="p-whatsapp" placeholder="0812345678 or +27812345678"/></div>
           <div class="form-group"><label>Residence</label><input type="text" id="p-residence" placeholder="e.g. 12 Church Street, Potchefstroom"/></div>
           <div class="form-group">
             <label>Where do you deliver? *</label>
@@ -1461,6 +1461,12 @@
       refreshMfaStatus();
     };
 
+    // South African number: 0XXXXXXXXX (10 digits) or +27XXXXXXXXX (9 digits after +27)
+    function isValidSAPhone(v){
+      const cleaned=(v||'').replace(/[\s-]/g,'');
+      return /^(0\d{9}|\+27\d{9})$/.test(cleaned);
+    }
+
     async function saveProfile() {
       const name = document.getElementById('p-name').value.trim();
       const wa   = document.getElementById('p-whatsapp').value.trim();
@@ -1469,6 +1475,7 @@
       const err  = document.getElementById('profile-error');
       err.style.color='#9333ea'; err.textContent='';
       if (!name||!wa) { err.textContent='❌ Name and WhatsApp are required'; return; }
+      if (!isValidSAPhone(wa)) { err.textContent='❌ Enter a valid South African number, e.g. 0812345678 or +27812345678'; return; }
       if (!allAreas && !sellerAreas.length) { err.textContent='❌ Choose at least one area you deliver to (tick "Deliver anywhere" or add a specific area)'; return; }
 
       // No free trial — sellers must pay via PayFast before posting

@@ -50,7 +50,7 @@
   <div class="msg-wrap" id="msg-wrap">
     <div class="thread-list" id="thread-list"><p class="loading-msg">Loading conversations... ⏳</p></div>
     <div class="chat-panel" id="chat-panel">
-      <div class="chat-header"><button class="chat-back-btn" onclick="closeThread()" aria-label="Back to conversations">←</button><span id="chat-header-text">Select a conversation</span></div>
+      <div class="chat-header"><button class="chat-back-btn" onclick="closeThread()" aria-label="Back to conversations">←</button><span id="chat-header-text" style="flex:1">Select a conversation</span><div id="chat-header-actions" style="display:none;gap:6px"><button class="btn-sm btn-toggle" id="mute-btn" onclick="toggleMute()">🔇 Mute</button><button class="btn-sm btn-delete" id="block-btn" onclick="toggleBlock()">🚫 Block</button></div>
       <div class="chat-messages" id="chat-messages"><p class="loading-msg" style="margin:auto">Pick a conversation on the left, or message a seller from a listing 💬</p></div>
       <div class="chat-input-row" id="chat-input-row" style="display:none">
         <input type="text" id="chat-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()"/>
@@ -64,10 +64,44 @@
     const supabase = createClient('https://spupfdclswjlpwiebwlq.supabase.co','sb_publishable_EyDf6vx8F4-aI09u6lK0_w_F4gdi9PH');
 
     let currentUser=null, activeThread=null, pollTimer=null;
+    let blockState={}; // counterpart_id -> {is_blocked, is_muted}
 
     const {data:{user}} = await supabase.auth.getUser();
     if(!user){ window.location.href='login.html'; }
     currentUser=user;
+
+    async function loadBlockState(){
+      const {data}=await supabase.from('blocked_users').select('*').eq('blocker_id',user.id);
+      blockState={};
+      (data||[]).forEach(r=>{ blockState[r.blocked_id]={is_blocked:r.is_blocked, is_muted:r.is_muted}; });
+    }
+    function updateHeaderActions(counterpartId){
+      const st=blockState[counterpartId]||{is_blocked:false,is_muted:false};
+      document.getElementById('chat-header-actions').style.display='flex';
+      const muteBtn=document.getElementById('mute-btn');
+      const blockBtn=document.getElementById('block-btn');
+      muteBtn.textContent=st.is_muted?'🔔 Unmute':'🔇 Mute';
+      blockBtn.textContent=st.is_blocked?'✅ Unblock':'🚫 Block';
+    }
+    window.toggleMute=async()=>{
+      if(!activeThread)return;
+      const counterpartId=activeThread.buyer_id===user.id?activeThread.seller_id:activeThread.buyer_id;
+      const st=blockState[counterpartId]||{is_blocked:false,is_muted:false};
+      const {error}=await supabase.from('blocked_users').upsert({blocker_id:user.id,blocked_id:counterpartId,is_blocked:st.is_blocked,is_muted:!st.is_muted},{onConflict:'blocker_id,blocked_id'});
+      if(error){alert('Could not update: '+error.message);return;}
+      await loadBlockState();
+      updateHeaderActions(counterpartId);
+    };
+    window.toggleBlock=async()=>{
+      if(!activeThread)return;
+      const counterpartId=activeThread.buyer_id===user.id?activeThread.seller_id:activeThread.buyer_id;
+      const st=blockState[counterpartId]||{is_blocked:false,is_muted:false};
+      if(!st.is_blocked && !confirm('Block this user? They will no longer be able to message you.'))return;
+      const {error}=await supabase.from('blocked_users').upsert({blocker_id:user.id,blocked_id:counterpartId,is_blocked:!st.is_blocked,is_muted:st.is_muted},{onConflict:'blocker_id,blocked_id'});
+      if(error){alert('Could not update: '+error.message);return;}
+      await loadBlockState();
+      updateHeaderActions(counterpartId);
+    };
 
     async function loadThreads(){
       const {data} = await supabase.from('messages').select('*,listings(title)').or('buyer_id.eq.'+user.id+',seller_id.eq.'+user.id).order('created_at',{ascending:false});
@@ -112,6 +146,7 @@
       const counterpartId = t.buyer_id===user.id?t.seller_id:t.buyer_id;
       document.getElementById('chat-header-text').textContent = (window._names[counterpartId]||'User')+(t.listingTitle?' · '+t.listingTitle:'');
       document.getElementById('chat-input-row').style.display='flex';
+      updateHeaderActions(counterpartId);
       renderMessages();
       // Mark unread as read
       const unreadIds = t.messages.filter(m=>m.sender_id!==user.id && !m.is_read).map(m=>m.id);
@@ -136,12 +171,14 @@
       const input = document.getElementById('chat-input');
       const content = input.value.trim();
       if(!content || !activeThread) return;
+      const counterpartId = activeThread.buyer_id===user.id?activeThread.seller_id:activeThread.buyer_id;
+      if(blockState[counterpartId]?.is_blocked){ alert('You have blocked this user. Unblock them to send a message.'); return; }
       const payload = {
         buyer_id: activeThread.buyer_id, seller_id: activeThread.seller_id,
         listing_id: activeThread.listing_id, sender_id: user.id, content
       };
       const {data,error} = await supabase.from('messages').insert(payload).select().single();
-      if(error){ alert('Could not send: '+error.message); return; }
+      if(error){ alert(error.message.includes('row-level security')?'Could not send — this user has blocked you.':'Could not send: '+error.message); return; }
       input.value='';
       activeThread.messages.unshift(data);
       renderMessages();
@@ -151,6 +188,7 @@
     const params = new URLSearchParams(location.search);
     const toSeller = params.get('seller');
     const listingId = params.get('listing');
+    await loadBlockState();
     if (toSeller && toSeller!==user.id) {
       const {data:sellerProfile} = await supabase.from('profiles').select('full_name,store_name').eq('id',toSeller).single();
       activeThread = { buyer_id:user.id, seller_id:toSeller, listing_id:listingId||null, messages:[] };
@@ -158,6 +196,7 @@
       document.getElementById('chat-header-text').textContent = sellerProfile?.store_name||sellerProfile?.full_name||'Seller';
       document.getElementById('chat-input-row').style.display='flex';
       document.getElementById('chat-messages').innerHTML = '<p class="loading-msg" style="margin:auto">Say hi 👋</p>';
+      updateHeaderActions(toSeller);
     }
 
     await loadThreads();

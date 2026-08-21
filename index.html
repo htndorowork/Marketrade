@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Marketrade 🛍️</title>
+  <title>Marketrade — Marketplace 🛍️</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-    <meta property="og:title" content="Marketrade 🛍️"/>
-  <meta property="og:description" content="Buy and sell with your community — textbooks, electronics, clothing, and more."/>
+  <meta name="description" content="Jobs, furniture, electronics and more"/>
+    <meta property="og:title" content="Marketrade — Marketplace 🛍️"/>
+  <meta property="og:description" content="Jobs, furniture, electronics and more"/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
@@ -123,6 +124,7 @@
       </label>
       <button class="filter-reset" onclick="resetFilters()" type="button">↺ Reset</button>
       <button class="filter-apply" onclick="applyFilters()" type="button">Apply ✓</button>
+      <button class="filter-apply" style="background:#fff;color:#7c3aed;border:2px solid #7c3aed" onclick="saveSearchAlert()" type="button">🔔 Alert me</button>
     </div>
 
     <div class="grid" id="listings-grid">
@@ -739,6 +741,19 @@
       document.getElementById('sort-select').value='newest';
       document.getElementById('my-area-only').checked=false;
       selectCat('All',document.querySelector('.cat'));
+    };
+    window.saveSearchAlert=async()=>{
+      if(!currentUser){ showToast('Sign in to save a price/search alert 🔔'); window.location.href='login.html'; return; }
+      const keyword=(document.getElementById('search-input').value||'').trim();
+      const maxPrice=parseFloat(document.getElementById('price-max').value)||null;
+      const areaOnly=document.getElementById('my-area-only').checked;
+      if(!keyword && cat==='All' && !maxPrice){ showToast('Type a keyword, pick a category, or set a max price first'); return; }
+      const {error}=await supabase.from('saved_searches').insert({
+        user_id:currentUser.id, keyword:keyword||null, category:cat==='All'?null:cat,
+        max_price:maxPrice, area_only:areaOnly
+      });
+      if(error){ showToast('Could not save alert: '+error.message); return; }
+      showToast('🔔 Alert saved! We will notify you when a matching item is posted.');
     };
     window.toggleFilterPanel=()=>{
       document.getElementById('filter-toolbar').classList.toggle('open');

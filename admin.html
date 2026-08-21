@@ -6,7 +6,7 @@
   <title>Admin — Marketrade</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
     <meta property="og:title" content="Admin — Marketrade"/>
-  <meta property="og:description" content="Buy and sell with your community — textbooks, electronics, clothing, and more."/>
+  <meta property="og:description" content="Buy and sell with your community — jobs, furniture, electronics and more."/>
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="manifest.json"/>
@@ -72,7 +72,10 @@
         <button class="btn-sm btn-toggle" style="margin:8px 0" onclick="exportListingsCSV()">⬇️ Export CSV</button>
         <div id="all-listings-container"><p class="loading-msg">Loading...</p></div>
       </div>
-      <div id="tab-sellers" style="display:none"><div id="all-sellers-container"><p class="loading-msg">Loading...</p></div></div>
+      <div id="tab-sellers" style="display:none">
+        <button class="btn-sm btn-toggle" style="margin:8px 0" onclick="exportSellersCSV()">⬇️ Export CSV</button>
+        <div id="all-sellers-container"><p class="loading-msg">Loading...</p></div>
+      </div>
       <div id="tab-paid" style="display:none">
         <p style="font-size:13px;color:#888;font-weight:600;margin-bottom:12px">Sellers whose monthly subscription is active and not blocked.</p>
         <div id="paid-sellers-container"><p class="loading-msg">Loading...</p></div>
@@ -120,6 +123,7 @@
     const supabase=createClient('https://spupfdclswjlpwiebwlq.supabase.co','sb_publishable_EyDf6vx8F4-aI09u6lK0_w_F4gdi9PH');
     const CAT_EMOJI={Textbooks:'📚',Clothing:'👗',Electronics:'📱',Food:'🍱',Beauty:'💄',Tutoring:'🎓',Utensils:'🍴',Jewellery:'💍',Bags:'👜',Toys:'🧸',Pets:'🐾',Tools:'🔧',Snacks:'🍿',Sports:'🏃',Books:'📖',Music:'🎸',Cameras:'📸',Events:'🎉',Plants:'🌱',Decor:'🖼️',Baby:'👶',Data:'📶',Health:'🩹',Career:'💼',Accommodation:'🏠',Transport:'🚲',Services:'🛠️',Stationary:'✏️',Appliances:'🔌',Furniture:'🛋️',Others:'🔀'};
     let allListings=[];
+    let allSellers=[];
     let currentAdminId=null;
 
     async function init(){
@@ -239,6 +243,7 @@
 
     async function loadSellers(){
       const {data}=await supabase.from('profiles').select('*').order('created_at',{ascending:false});
+      allSellers=data||[];
       const c=document.getElementById('all-sellers-container');
       if(!data?.length){c.innerHTML='<div class="empty-msg">No users yet</div>';return;}
       c.innerHTML=data.map(s=>{
@@ -439,6 +444,16 @@
     window.exportOrdersCSV=async()=>{
       const {data}=await supabase.from('orders').select('*');
       downloadCSV(toCSV(data||[],['id','buyer_name','buyer_whatsapp','quantity','status','created_at']),'orders.csv');
+    };
+    window.exportSellersCSV=()=>{
+      const rows=allSellers.map(s=>({
+        id:s.id, full_name:s.full_name, store_name:s.store_name, role:s.role,
+        whatsapp:s.whatsapp, residence:s.residence, province:s.province, city:s.city,
+        district:s.district, suburb:s.suburb, seller_plan:s.seller_plan,
+        subscription_paid_until:s.subscription_paid_until, is_blocked:s.is_blocked,
+        is_admin:s.is_admin, referral_code:s.referral_code, created_at:s.created_at
+      }));
+      downloadCSV(toCSV(rows,['id','full_name','store_name','role','whatsapp','residence','province','city','district','suburb','seller_plan','subscription_paid_until','is_blocked','is_admin','referral_code','created_at']),'sellers.csv');
     };
 
     window._atoggle=async(id,cur)=>{
