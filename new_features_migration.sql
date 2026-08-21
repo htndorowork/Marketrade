@@ -164,7 +164,7 @@ DROP POLICY IF EXISTS "referrals_insert" ON referrals;
 CREATE POLICY "referrals_insert" ON referrals FOR INSERT
   WITH CHECK (auth.uid() = referred_id AND referrer_id <> referred_id);
 
--- Reward: +7 days of active subscription for the referrer, and notify them,
+-- Reward: +3 days of active subscription for the referrer, and notify them,
 -- the moment a friend they invited signs up.
 CREATE OR REPLACE FUNCTION public.reward_referrer()
 RETURNS trigger
@@ -174,11 +174,11 @@ SET search_path = public
 AS $$
 BEGIN
   UPDATE profiles
-  SET subscription_paid_until = GREATEST(COALESCE(subscription_paid_until, CURRENT_DATE), CURRENT_DATE) + 7
+  SET subscription_paid_until = GREATEST(COALESCE(subscription_paid_until, CURRENT_DATE), CURRENT_DATE) + 3
   WHERE id = NEW.referrer_id;
 
   INSERT INTO notifications (user_id, type, message)
-  VALUES (NEW.referrer_id, 'referral', '🎉 A friend joined using your invite link — you earned 7 free selling days!');
+  VALUES (NEW.referrer_id, 'referral', '🎉 A friend joined using your invite link — you earned 3 free selling days!');
   RETURN NEW;
 END;
 $$;
