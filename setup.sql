@@ -935,7 +935,7 @@ BEGIN
      OR NEW.sender_id IS DISTINCT FROM OLD.sender_id
      OR NEW.buyer_id IS DISTINCT FROM OLD.buyer_id
      OR NEW.seller_id IS DISTINCT FROM OLD.seller_id
-     OR NEW.listing_id IS DISTINCT FROM OLD.listing_id THEN
+     OR (NEW.listing_id IS DISTINCT FROM OLD.listing_id AND NEW.listing_id IS NOT NULL) THEN
     RAISE EXCEPTION 'Cannot modify message content';
   END IF;
   RETURN NEW;
@@ -1307,19 +1307,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  PERFORM net.http_post(
-    url := 'https://YOUR_PROJECT.supabase.co/functions/v1/send-push',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-push-secret', 'PUSH_SHARED_SECRET'
-    ),
-    body := jsonb_build_object(
-      'user_id', NEW.user_id,
-      'title', 'Marketrade',
-      'body', NEW.message,
-      'listing_id', NEW.listing_id
-    )
-  );
+  BEGIN
+    PERFORM net.http_post(
+      url := 'https://YOUR_PROJECT.supabase.co/functions/v1/send-push',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'x-push-secret', 'PUSH_SHARED_SECRET'
+      ),
+      body := jsonb_build_object(
+        'user_id', NEW.user_id,
+        'title', 'Marketrade',
+        'body', NEW.message,
+        'listing_id', NEW.listing_id
+      )
+    );
+  EXCEPTION WHEN OTHERS THEN
+    -- Never let a push-delivery failure (extension not enabled, function
+    -- down, network hiccup) roll back whatever action created this
+    -- notification (an order, a message, a saved-search match, ...).
+    NULL;
+  END;
   RETURN NEW;
 END;
 $$;

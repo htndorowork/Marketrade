@@ -103,7 +103,7 @@
     } else {
       const [{data:profile},{data:listings},{data:reviews},{count:salesCountForBadge},{data:soldItems}] = await Promise.all([
         supabase.from('profiles').select('full_name,residence,store_name,store_bio,store_logo_url,deliver_all_areas,seller_areas,is_blocked,subscription_paid_until,is_admin').eq('id',sellerId).single(),
-        supabase.from('listings').select('*').eq('seller_id',sellerId).eq('is_available',true).eq('is_draft',false).gt('quantity',0).order('created_at',{ascending:false}),
+        supabase.from('listings').select('*').eq('seller_id',sellerId).eq('is_available',true).eq('is_draft',false).order('created_at',{ascending:false}),
         supabase.from('reviews').select('rating,comment,created_at').eq('seller_id',sellerId).order('created_at',{ascending:false}),
         supabase.from('orders').select('id',{count:'exact',head:true}).eq('seller_id',sellerId).eq('status','completed'),
         supabase.from('listings').select('title,price,discount_percent,image_url,category').eq('seller_id',sellerId).eq('is_sold',true).order('renewed_at',{ascending:false}).limit(6)
@@ -142,13 +142,14 @@
         if (!listings || !listings.length) {
           gridEl.innerHTML = '<p class="loading-msg">This seller has no active listings right now 🚀</p>';
         } else {
+          listings.sort((a,b)=>(b.quantity>0)-(a.quantity>0));
           gridEl.innerHTML = listings.map(l=>{
             const c=CAT_COLOR[l.category]||{bg:'#f5f5f5'};
             const e=CAT_EMOJI[l.category]||'🛍️';
             const fp=l.discount_percent>0?Math.round(l.price*(1-l.discount_percent/100)):l.price;
             const db=l.discount_percent>0?'<div class="discount-tag">-'+l.discount_percent+'% OFF</div>':'';
             const img=l.image_url?'<img loading="lazy" src="'+l.image_url+'" alt="'+l.title.replace(/"/g,'')+'" style="width:100%;height:100%;object-fit:cover"/>':`<span style="font-size:44px">${e}</span>`;
-            const stock=l.quantity>5?'<div class="card-stock">'+l.quantity+' in stock</div>':'<div class="card-stock low">Only '+l.quantity+' left!</div>';
+            const stock=l.quantity>5?'<div class="card-stock">'+l.quantity+' in stock</div>':l.quantity>0?'<div class="card-stock low">Only '+l.quantity+' left!</div>':'<div class="card-stock out">Out of stock</div>';
             const condTag=l.condition?'<span class="condition-tag">'+l.condition+'</span>':'';
             const negTag=l.is_negotiable?'<span class="negotiable-tag">💬 Negotiable</span>':'';
             return '<div class="card" onclick="location.href=\'index.html?open='+l.id+'\'">'+

@@ -178,6 +178,7 @@
         </div>
         <button class="btn-order" id="btn-add-to-cart">🛒 Add to Cart</button>
         <button class="btn-order-cart" id="btn-order-now">Order Now</button>
+        <button class="btn-order" id="btn-restock-alert" style="display:none;background:#fff;color:#2563eb;border:2px solid #2563eb" onclick="requestRestockAlert()">🔔 Notify me when back in stock</button>
         <div id="modal-similar-section" style="display:none;margin-top:18px">
           <div style="font-size:13px;font-weight:800;color:#888;margin-bottom:8px">You might also like</div>
           <div class="grid" id="modal-similar-grid" style="grid-template-columns:repeat(2,1fr);gap:8px"></div>
@@ -663,7 +664,7 @@
       loadCart();
     }
 
-    const {data}=await supabase.from('listings').select('*,profiles(full_name,residence,deliver_all_areas,seller_areas,is_blocked,subscription_paid_until,is_admin)').eq('is_available',true).eq('is_draft',false).gt('quantity',0).order('renewed_at',{ascending:false,nullsFirst:false});
+    const {data}=await supabase.from('listings').select('*,profiles(full_name,residence,deliver_all_areas,seller_areas,is_blocked,subscription_paid_until,is_admin)').eq('is_available',true).eq('is_draft',false).order('renewed_at',{ascending:false,nullsFirst:false});
     const today=new Date().toISOString().slice(0,10);
     all=(data||[]).filter(l=>{
       const p=l.profiles;
@@ -672,6 +673,8 @@
       if(p.is_admin===true) return true;
       return !!(p.subscription_paid_until && p.subscription_paid_until >= today);
     });
+    // push out-of-stock items to the end so they don't crowd out available ones
+    all.sort((a,b)=>(b.quantity>0)-(a.quantity>0));
 
     // Verified-seller badge: sellers with 5+ completed sales
     let verifiedSellers=new Set();
@@ -741,6 +744,27 @@
       document.getElementById('sort-select').value='newest';
       document.getElementById('my-area-only').checked=false;
       selectCat('All',document.querySelector('.cat'));
+    };
+    window.checkRestockAlertState=async(listingId)=>{
+      const btn=document.getElementById('btn-restock-alert');
+      if(!currentUser){ btn.textContent='🔔 Sign in to get notified'; return; }
+      const {data}=await supabase.from('restock_alerts').select('id').eq('user_id',currentUser.id).eq('listing_id',listingId).maybeSingle();
+      btn.textContent = data ? '🔔 We\'ll notify you — tap to cancel' : '🔔 Notify me when back in stock';
+      btn.dataset.subscribed = data ? '1' : '0';
+    };
+    window.requestRestockAlert=async()=>{
+      if(!currentListing)return;
+      if(!currentUser){ showToast('Sign in to get notified 🔔'); window.location.href='login.html'; return; }
+      const btn=document.getElementById('btn-restock-alert');
+      if(btn.dataset.subscribed==='1'){
+        await supabase.from('restock_alerts').delete().eq('user_id',currentUser.id).eq('listing_id',currentListing.id);
+        showToast('Alert cancelled');
+      } else {
+        const {error}=await supabase.from('restock_alerts').insert({user_id:currentUser.id, listing_id:currentListing.id});
+        if(error && !error.message.includes('duplicate')){ showToast('Could not save alert: '+error.message); return; }
+        showToast('🔔 We\'ll message you the moment it\'s back in stock!');
+      }
+      checkRestockAlertState(currentListing.id);
     };
     window.saveSearchAlert=async()=>{
       if(!currentUser){ showToast('Sign in to save a price/search alert 🔔'); window.location.href='login.html'; return; }
@@ -886,6 +910,17 @@
       document.getElementById('modal-stock-note').textContent=l.quantity>0?l.quantity+' available':'Out of stock';
       document.getElementById('btn-add-to-cart').disabled=l.quantity<=0;
       document.getElementById('btn-order-now').disabled=l.quantity<=0;
+      const restockBtn=document.getElementById('btn-restock-alert');
+      if(l.quantity<=0){
+        document.getElementById('btn-add-to-cart').style.display='none';
+        document.getElementById('btn-order-now').style.display='none';
+        restockBtn.style.display='block';
+        checkRestockAlertState(l.id);
+      } else {
+        document.getElementById('btn-add-to-cart').style.display='block';
+        document.getElementById('btn-order-now').style.display='block';
+        restockBtn.style.display='none';
+      }
       // Show sign in notice if not logged in
       const signInNote = document.getElementById('modal-signin-note');
       if(!currentUser){
